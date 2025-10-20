@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Визитка</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR Визитка</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>AR Визитка</h1>
-    <button id="start-camera">Включить камеру</button>
-    <video id="camera" autoplay playsinline></video>
+  <h1>AR Визитка</h1>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <div class="controls">
+    <button id="start-camera">Включить камеру</button>
+    <button id="switch-camera" style="display:none;">📷 Переключить</button>
+  </div>
+
+  <video id="camera" autoplay playsinline></video>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
