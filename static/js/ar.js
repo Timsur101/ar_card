@@ -20,40 +20,46 @@ document.addEventListener("DOMContentLoaded", async () => {
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
   anchor.group.add(cube);
 
-  // 🟢 Функция создания панели с текстом
-  const createOval = (text, xOffset) => {
+  // 🟢 Функция: создаёт панель с несколькими строками текста
+  const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
 
-    // Эллипс-фон
-    const ovalGeometry = new THREE.PlaneGeometry(0.9, 0.3, 32);
-    const ovalMaterial = new THREE.MeshBasicMaterial({
+    // Размер панели адаптивен под количество строк
+    const height = 0.25 + 0.15 * lines.length;
+
+    const backgroundGeometry = new THREE.PlaneGeometry(1.2, height);
+    const backgroundMaterial = new THREE.MeshBasicMaterial({
       color: 0x222222,
       transparent: true,
       opacity: 0.8,
       side: THREE.DoubleSide,
     });
-    const oval = new THREE.Mesh(ovalGeometry, ovalMaterial);
-    group.add(oval);
+    const background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+    group.add(background);
 
-    // Создаём текстуру один раз
+    // Создаём текстуру
     const canvas = document.createElement("canvas");
     canvas.width = 512;
-    canvas.height = 256;
+    canvas.height = 512;
     const ctx = canvas.getContext("2d");
 
     ctx.fillStyle = "transparent";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
-
-    // Автоматически уменьшаем шрифт, если текст длинный
-    let fontSize = 42;
-    if (text.length > 16) fontSize = 32;
-    if (text.length > 24) fontSize = 28;
-
-    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    // Размер и расположение текста
+    let fontSize = 42;
+    if (lines.length > 3) fontSize = 36;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+
+    const x = canvas.width / 2;
+    let y = 120;
+    for (const line of lines) {
+      ctx.fillText(line, x, y);
+      y += fontSize + 20;
+    }
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
@@ -63,23 +69,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       transparent: true,
     });
     const textPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.9, 0.3),
+      new THREE.PlaneGeometry(1.2, height),
       textMaterial
     );
 
+    // Чуть спереди, чтобы не конфликтовал с фоном
+    textPlane.position.z = 0.01;
     group.add(textPlane);
-    group.position.set(xOffset, 0, 0.01); // чуть вперёд, чтобы не мерцало с oval
+
+    group.position.set(xOffset, 0, 0);
     return group;
   };
 
-  const leftOval1 = createOval("Номер телефона", -1.0);
-  const leftOval2 = createOval("+7 (916) 930-32-75", -2.0);
-  const rightOval1 = createOval("Почта", 1.0);
-  const rightOval2 = createOval("Timsursur@gmail.com", 2.0);
-  anchor.group.add(leftOval1);
-  anchor.group.add(leftOval2);
-  anchor.group.add(rightOval1);
-  anchor.group.add(rightOval2);
+  // 🧭 Создаём панели
+  const leftPanel = createTextPanel(
+    ["КОНТАКТЫ", "+7 (999) 123-45-67", "mail@example.com"],
+    -1.2
+  );
+  const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "МЕНЕДЖЕР"], 1.2);
+
+  anchor.group.add(leftPanel);
+  anchor.group.add(rightPanel);
 
   // 💡 Свет
   const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
@@ -87,6 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ▶️ Запуск
   await mindarThree.start();
+
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.03;
