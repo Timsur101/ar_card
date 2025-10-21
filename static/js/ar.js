@@ -10,17 +10,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   const { renderer, scene, camera } = mindarThree;
   const anchor = mindarThree.addAnchor(0);
 
-  // 💡 Центральный объект — куб
+  // 💎 Центральный вращающийся куб
   const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-  const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffcc, metalness: 0.5, roughness: 0.2 });
+  const cubeMaterial = new THREE.MeshStandardMaterial({
+    color: 0x00ffcc,
+    metalness: 0.5,
+    roughness: 0.2,
+  });
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
   anchor.group.add(cube);
 
-  // 💡 Овалы с контактами
+  // 🟢 Функция создания панели с текстом
   const createOval = (text, xOffset) => {
     const group = new THREE.Group();
 
-    const ovalGeometry = new THREE.PlaneGeometry(0.7, 0.25, 32);
+    // Эллипс-фон
+    const ovalGeometry = new THREE.PlaneGeometry(0.9, 0.3, 32);
     const ovalMaterial = new THREE.MeshBasicMaterial({
       color: 0x222222,
       transparent: true,
@@ -28,34 +33,53 @@ document.addEventListener("DOMContentLoaded", async () => {
       side: THREE.DoubleSide,
     });
     const oval = new THREE.Mesh(ovalGeometry, ovalMaterial);
+    group.add(oval);
 
-    // Текст
+    // Создаём текстуру один раз
     const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 128;
+    canvas.width = 512;
+    canvas.height = 256;
     const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "transparent";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "white";
-    ctx.font = "bold 32px sans-serif";
+
+    // Автоматически уменьшаем шрифт, если текст длинный
+    let fontSize = 42;
+    if (text.length > 16) fontSize = 32;
+    if (text.length > 24) fontSize = 28;
+
+    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(text, 128, 64);
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
-    const textMat = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-    const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.25), textMat);
+    texture.needsUpdate = true;
 
-    group.add(oval);
+    const textMaterial = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+    });
+    const textPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.9, 0.3),
+      textMaterial
+    );
+
     group.add(textPlane);
-    group.position.set(xOffset, 0, 0);
-
+    group.position.set(xOffset, 0, 0.01); // чуть вперёд, чтобы не мерцало с oval
     return group;
   };
 
-  const leftOval = createOval("📞 +7 (999) 123-45-67", -0.8);
-  const rightOval = createOval("🌐 yoursite.com", 0.8);
-
-  anchor.group.add(leftOval);
-  anchor.group.add(rightOval);
+  const leftOval1 = createOval("Номер телефона", -1.0);
+  const leftOval2 = createOval("+7 (916) 930-32-75", -2.0);
+  const rightOval1 = createOval("Почта", 1.0);
+  const rightOval2 = createOval("Timsursur@gmail.com", 2.0);
+  anchor.group.add(leftOval1);
+  anchor.group.add(leftOval2);
+  anchor.group.add(rightOval1);
+  anchor.group.add(rightOval2);
 
   // 💡 Свет
   const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
@@ -63,7 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ▶️ Запуск
   await mindarThree.start();
-
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.03;
