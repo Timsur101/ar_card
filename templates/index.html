@@ -1,21 +1,59 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Визитка</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR визитка</title>
+  <style>
+    html,body {
+      margin:0; padding:0; overflow:hidden; background:#000; height:100%;
+    }
+    #container {
+      position:fixed; width:100%; height:100%; top:0; left:0;
+    }
+  </style>
 </head>
 <body>
-  <h1>AR Визитка</h1>
+  <div id="container"></div>
 
-  <div class="controls">
-    <button id="start-camera">Включить камеру</button>
-    <button id="switch-camera" style="display:none;">📷 Переключить</button>
-  </div>
+  <!-- 🗺️ Import map для всех путей three.js -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
 
-  <video id="camera" autoplay playsinline></video>
+  <!-- 🚀 Основной модуль -->
+  <script type="module">
+    import * as THREE from "three";
+    import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js";
 
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    console.log("✅ MindAR загружен:", MindARThree);
+
+    const mindarThree = new MindARThree({
+      container: document.querySelector('#container'),
+      imageTargetSrc: "/static/ar/visiting-card.mind",
+    });
+
+    const { renderer, scene, camera } = mindarThree;
+
+    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const material = new THREE.MeshNormalMaterial();
+    const cube = new THREE.Mesh(geometry, material);
+
+    const anchor = mindarThree.addAnchor(0);
+    anchor.group.add(cube);
+
+    await mindarThree.start();
+
+    renderer.setAnimationLoop(() => {
+      cube.rotation.x += 0.02;
+      cube.rotation.y += 0.03;
+      renderer.render(scene, camera);
+    });
+  </script>
 </body>
 </html>
