@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
     const height = 0.25 + 0.15 * lines.length;
-    const background = new THREE.Mesh(
+    const bg = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
       new THREE.MeshBasicMaterial({
         color: 0x222222,
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         opacity: 0.8,
       })
     );
-    group.add(background);
+    group.add(bg);
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
@@ -45,10 +45,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       ctx.fillText(line, canvas.width / 2, y);
       y += 62;
     }
-    const texture = new THREE.CanvasTexture(canvas);
+    const tex = new THREE.CanvasTexture(canvas);
     const textPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
-      new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true })
     );
     textPlane.position.z = 0.01;
     group.add(textPlane);
@@ -84,20 +84,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       new THREE.PlaneGeometry(0.6, 0.3),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true })
     );
-    button.position.set(x, -0.8, -2); 
+    button.position.set(x, -0.8, 0.2);
     button.userData.onClick = onClick;
     return button;
   };
 
-  const btnSite1 = createButton("GitHub", "#515b67ff", -0.7, () => {
+  const btnSite1 = createButton("GitHub", "#515b67", -0.7, () => {
     window.open("https://github.com/Timsur101", "_blank");
   });
-  const btnSite2 = createButton("Сайт", "#ff0000ff", 0.7, () => {
+  const btnSite2 = createButton("Сайт", "#ff0000", 0.7, () => {
     window.open("https://youtube.com", "_blank");
   });
 
-  scene.add(btnSite1);
-  scene.add(btnSite2);
+  anchor.group.add(btnSite1);
+  anchor.group.add(btnSite2);
 
   await mindarThree.start();
   document.getElementById("hint").style.display = "none";
@@ -110,13 +110,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
-    const allObjects = [];
-    scene.traverse((obj) => {
-      if (obj.isMesh && obj.userData.onClick) allObjects.push(obj);
+    const clickable = [];
+    anchor.group.traverse((obj) => {
+      if (obj.isMesh && obj.userData.onClick) clickable.push(obj);
     });
-    const intersects = raycaster.intersectObjects(allObjects, true);
-    if (intersects.length > 0) {
-      const obj = intersects[0].object;
+    const hits = raycaster.intersectObjects(clickable, true);
+    if (hits.length > 0) {
+      const obj = hits[0].object;
       if (obj.userData.onClick) obj.userData.onClick();
     }
   });
