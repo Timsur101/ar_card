@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const { renderer, scene, camera } = mindarThree;
+  renderer.domElement.style.touchAction = "none";
   const anchor = mindarThree.addAnchor(0);
 
   const cube = new THREE.Mesh(
@@ -95,7 +96,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnSite2 = createButton("Сайт", "#ff0000", 0.7, () => {
     window.open("https://youtube.com", "_blank");
   });
-
   anchor.group.add(btnSite1);
   anchor.group.add(btnSite2);
 
@@ -105,10 +105,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
 
-  renderer.domElement.addEventListener("pointerdown", (event) => {
+  const handleClick = (event) => {
     const rect = renderer.domElement.getBoundingClientRect();
-    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    const clientX = event.clientX || (event.touches && event.touches[0].clientX);
+    const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+    pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
     const clickable = [];
     anchor.group.traverse((obj) => {
@@ -119,7 +121,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const obj = hits[0].object;
       if (obj.userData.onClick) obj.userData.onClick();
     }
-  });
+  };
+
+  renderer.domElement.addEventListener("touchend", handleClick);
+  renderer.domElement.addEventListener("mousedown", handleClick);
 
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
