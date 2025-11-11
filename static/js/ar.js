@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
     const height = 0.25 + 0.15 * lines.length;
-    const bg = new THREE.Mesh(
+    const background = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
       new THREE.MeshBasicMaterial({
         color: 0x222222,
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         opacity: 0.8,
       })
     );
-    group.add(bg);
+    group.add(background);
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
@@ -46,10 +46,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       ctx.fillText(line, canvas.width / 2, y);
       y += 62;
     }
-    const tex = new THREE.CanvasTexture(canvas);
+    const texture = new THREE.CanvasTexture(canvas);
     const textPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
-      new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+      new THREE.MeshBasicMaterial({ map: texture, transparent: true })
     );
     textPlane.position.z = 0.01;
     group.add(textPlane);
@@ -85,17 +85,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       new THREE.PlaneGeometry(0.6, 0.3),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true })
     );
-    button.position.set(x, -0.8, 0.2);
+    button.position.set(x, -0.8, 0.25);
     button.userData.onClick = onClick;
     return button;
   };
 
-  const btnSite1 = createButton("GitHub", "#515b67", -0.7, () => {
+  const btnSite1 = createButton("GitHub", "#515b67ff", -0.7, () => {
     window.open("https://github.com/Timsur101", "_blank");
   });
-  const btnSite2 = createButton("Сайт", "#ff0000", 0.7, () => {
+  const btnSite2 = createButton("Сайт", "#ff0000ff", 0.7, () => {
     window.open("https://youtube.com", "_blank");
   });
+
   anchor.group.add(btnSite1);
   anchor.group.add(btnSite2);
 
@@ -111,11 +112,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const clientY = event.clientY || (event.touches && event.touches[0].clientY);
     pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
     pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
     raycaster.setFromCamera(pointer, camera);
+
     const clickable = [];
     anchor.group.traverse((obj) => {
       if (obj.isMesh && obj.userData.onClick) clickable.push(obj);
     });
+
     const hits = raycaster.intersectObjects(clickable, true);
     if (hits.length > 0) {
       const obj = hits[0].object;
