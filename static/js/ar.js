@@ -2,17 +2,21 @@ import * as THREE from "three";
 import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-
   const mindarThree = new MindARThree({
     container: document.querySelector("#container"),
     imageTargetSrc: "/static/ar/visiting-card.mind",
   });
+
   const { renderer, scene, camera } = mindarThree;
   const anchor = mindarThree.addAnchor(0);
 
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    new THREE.MeshStandardMaterial({ color: 0x00ffcc, metalness: 0.5, roughness: 0.2 })
+    new THREE.MeshStandardMaterial({
+      color: 0x00ffcc,
+      metalness: 0.5,
+      roughness: 0.2,
+    })
   );
   anchor.group.add(cube);
 
@@ -20,11 +24,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     const group = new THREE.Group();
     const height = 0.25 + 0.15 * lines.length;
 
-    const bg = new THREE.Mesh(
+    const background = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
-      new THREE.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.8 })
+      new THREE.MeshBasicMaterial({
+        color: 0x222222,
+        transparent: true,
+        opacity: 0.8,
+      })
     );
-    group.add(bg);
+    group.add(background);
 
     const canvas = document.createElement("canvas");
     canvas.width = 512;
@@ -34,9 +42,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = "bold 42px sans-serif";
+
     let y = 120;
     for (const line of lines) {
-      ctx.fillText(line, 256, y);
+      ctx.fillText(line, canvas.width / 2, y);
       y += 62;
     }
 
@@ -47,8 +56,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
     textPlane.position.z = 0.01;
     group.add(textPlane);
-    group.position.set(xOffset, 0, 0);
 
+    group.position.set(xOffset, 0, 0);
     return group;
   };
 
@@ -57,11 +66,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     -1.2
   );
   const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 1.2);
+
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.5));
+  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+  scene.add(light);
+
+  const createButton = (label, color, x, onClick) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 36px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, 128, 64);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const button = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.6, 0.3),
+      new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+    );
+    button.position.set(x, -0.8, 0.1);
+    button.userData.onClick = onClick;
+    return button;
+  };
+
+  const btnSite1 = createButton("GitHub", "#515b67ff", -0.7, () => {
+    window.open("https://github.com/Timsur101", "_blank");
+  });
+  const btnSite2 = createButton("🌐 Сайт", "#ff0000ff", 0.7, () => {
+    window.open("https://youtube.com", "_blank");
+  });
+
+  anchor.group.add(btnSite1);
+  anchor.group.add(btnSite2);
+
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+
+  renderer.domElement.addEventListener("click", (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(anchor.group.children, true);
+    if (intersects.length > 0) {
+      const obj = intersects[0].object;
+      if (obj.userData.onClick) obj.userData.onClick();
+    }
+  });
+
   await mindarThree.start();
+  document.getElementById("hint").style.display = "none";
 
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
