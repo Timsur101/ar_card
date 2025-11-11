@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       new THREE.PlaneGeometry(0.6, 0.3),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true })
     );
-    button.position.set(x, -0.8, 0.25);
+    button.position.set(x, -0.8, -2); 
     button.userData.onClick = onClick;
     return button;
   };
@@ -95,20 +95,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnSite2 = createButton("Сайт", "#ff0000ff", 0.7, () => {
     window.open("https://youtube.com", "_blank");
   });
-  anchor.group.add(btnSite1);
-  anchor.group.add(btnSite2);
+
+  scene.add(btnSite1);
+  scene.add(btnSite2);
+
+  await mindarThree.start();
+  document.getElementById("hint").style.display = "none";
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
 
-  renderer.domElement.addEventListener("click", (event) => {
+  renderer.domElement.addEventListener("pointerdown", (event) => {
     const rect = renderer.domElement.getBoundingClientRect();
     pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
     const allObjects = [];
-    anchor.group.traverse((obj) => {
-      if (obj.isMesh) allObjects.push(obj);
+    scene.traverse((obj) => {
+      if (obj.isMesh && obj.userData.onClick) allObjects.push(obj);
     });
     const intersects = raycaster.intersectObjects(allObjects, true);
     if (intersects.length > 0) {
@@ -116,9 +120,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (obj.userData.onClick) obj.userData.onClick();
     }
   });
-
-  await mindarThree.start();
-  document.getElementById("hint").style.display = "none";
 
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
