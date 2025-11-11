@@ -23,7 +23,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
     const height = 0.25 + 0.15 * lines.length;
-
     const background = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
       new THREE.MeshBasicMaterial({
@@ -33,7 +32,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
     );
     group.add(background);
-
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
@@ -42,13 +40,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = "bold 42px sans-serif";
-
     let y = 120;
     for (const line of lines) {
       ctx.fillText(line, canvas.width / 2, y);
       y += 62;
     }
-
     const texture = new THREE.CanvasTexture(canvas);
     const textPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
@@ -56,7 +52,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
     textPlane.position.z = 0.01;
     group.add(textPlane);
-
     group.position.set(xOffset, 0, 0);
     return group;
   };
@@ -66,7 +61,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     -1.2
   );
   const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 1.2);
-
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
 
@@ -85,13 +79,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(label, 128, 64);
-
     const texture = new THREE.CanvasTexture(canvas);
     const button = new THREE.Mesh(
       new THREE.PlaneGeometry(0.6, 0.3),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true })
     );
-    button.position.set(x, -0.8, 0.1);
+    button.position.set(x, -0.8, 0.25);
     button.userData.onClick = onClick;
     return button;
   };
@@ -99,10 +92,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnSite1 = createButton("GitHub", "#515b67ff", -0.7, () => {
     window.open("https://github.com/Timsur101", "_blank");
   });
-  const btnSite2 = createButton("🌐 Сайт", "#ff0000ff", 0.7, () => {
+  const btnSite2 = createButton("Сайт", "#ff0000ff", 0.7, () => {
     window.open("https://youtube.com", "_blank");
   });
-
   anchor.group.add(btnSite1);
   anchor.group.add(btnSite2);
 
@@ -114,7 +106,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
-    const intersects = raycaster.intersectObjects(anchor.group.children, true);
+    const allObjects = [];
+    anchor.group.traverse((obj) => {
+      if (obj.isMesh) allObjects.push(obj);
+    });
+    const intersects = raycaster.intersectObjects(allObjects, true);
     if (intersects.length > 0) {
       const obj = intersects[0].object;
       if (obj.userData.onClick) obj.userData.onClick();
