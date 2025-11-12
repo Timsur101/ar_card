@@ -33,6 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
     );
     group.add(background);
+
     const canvas = document.createElement("canvas");
     canvas.width = 512;
     canvas.height = 512;
@@ -68,88 +69,70 @@ document.addEventListener("DOMContentLoaded", async () => {
   const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
   scene.add(light);
 
-  const btnGit = document.createElement("button");
-  btnGit.textContent = "GitHub";
-  Object.assign(btnGit.style, {
-    position: "fixed",
-    padding: "10px 16px",
-    background: "#515b67",
-    color: "white",
-    border: "none",
-    borderRadius: "10px",
-    fontWeight: "bold",
-    transform: "translate(-50%, -50%)",
-    display: "none",
-    zIndex: 20,
-  });
-  document.body.appendChild(btnGit);
+  // === HTML-кнопки, привязанные к 3D-точкам ===
+  const makeBtn = (label, color) => {
+    const el = document.createElement("button");
+    el.textContent = label;
+    Object.assign(el.style, {
+      position: "fixed",
+      padding: "10px 16px",
+      background: color,
+      color: "white",
+      border: "none",
+      borderRadius: "10px",
+      fontWeight: "bold",
+      transform: "translate(-50%, -50%)",
+      display: "none",
+      zIndex: 20,
+    });
+    document.body.appendChild(el);
+    return el;
+  };
 
-  const btnSite = document.createElement("button");
-  btnSite.textContent = "Сайт";
-  Object.assign(btnSite.style, {
-    position: "fixed",
-    padding: "10px 16px",
-    background: "#ff0000",
-    color: "white",
-    border: "none",
-    borderRadius: "10px",
-    fontWeight: "bold",
-    transform: "translate(-50%, -50%)",
-    display: "none",
-    zIndex: 20,
-  });
-  document.body.appendChild(btnSite);
+  const btnGit = makeBtn("GitHub", "#515b67");
+  const btnSite = makeBtn("Сайт", "#ff0000");
 
-  btnGit.addEventListener("click", () => {
-    window.open("https://github.com/Timsur101", "_blank");
-  });
-  btnSite.addEventListener("click", () => {
-    window.open("https://youtube.com", "_blank");
-  });
+  btnGit.addEventListener("click", () =>
+    window.open("https://github.com/Timsur101", "_blank")
+  );
+  btnSite.addEventListener("click", () =>
+    window.open("https://youtube.com", "_blank")
+  );
 
-  const btnGitAnchor = new THREE.Object3D();
-  btnGitAnchor.position.set(-0.7, -0.8, 0.2);
-  anchor.group.add(btnGitAnchor);
+  const gitAnchor = new THREE.Object3D();
+  gitAnchor.position.set(-0.7, -0.8, 0.2);
+  const siteAnchor = new THREE.Object3D();
+  siteAnchor.position.set(0.7, -0.8, 0.2);
+  anchor.group.add(gitAnchor);
+  anchor.group.add(siteAnchor);
 
-  const btnSiteAnchor = new THREE.Object3D();
-  btnSiteAnchor.position.set(0.7, -0.8, 0.2);
-  anchor.group.add(btnSiteAnchor);
-
-  const toScreenPosition = (obj, camera, renderer) => {
-    const vector = new THREE.Vector3();
-    obj.getWorldPosition(vector);
-    vector.project(camera);
+  const toScreen = (obj, camera, renderer) => {
+    const v = new THREE.Vector3();
+    obj.getWorldPosition(v);
+    v.project(camera);
     const rect = renderer.domElement.getBoundingClientRect();
     return {
-      x: (vector.x + 1) / 2 * rect.width + rect.left,
-      y: (-vector.y + 1) / 2 * rect.height + rect.top,
-      visible: vector.z < 1,
+      x: (v.x + 1) / 2 * rect.width + rect.left,
+      y: (-v.y + 1) / 2 * rect.height + rect.top,
+      visible: v.z < 1,
     };
   };
 
   await mindarThree.start();
   document.getElementById("hint").style.display = "none";
 
-  scene.rotation.z = Math.PI / 2;
-
-  for (const el of [btnGit, btnSite]) {
-    el.style.transform = "translate(-50%, -50%) rotate(90deg)";
-  }
-
-  const updateButtonPositions = () => {
-    const pos1 = toScreenPosition(btnGitAnchor, camera, renderer);
-    const pos2 = toScreenPosition(btnSiteAnchor, camera, renderer);
-
-    if (pos1.visible) {
+  const updateBtn = () => {
+    const g = toScreen(gitAnchor, camera, renderer);
+    const s = toScreen(siteAnchor, camera, renderer);
+    if (g.visible) {
       btnGit.style.display = "block";
-      btnGit.style.left = `${pos1.x}px`;
-      btnGit.style.top = `${pos1.y}px`;
+      btnGit.style.left = `${g.x}px`;
+      btnGit.style.top = `${g.y}px`;
     } else btnGit.style.display = "none";
-
-    if (pos2.visible) {
+    if (s.visible) {
       btnSite.style.display = "block";
-      btnSite.style.left = `${pos2.x}px`;
-      btnSite.style.top = `${pos2.y}px`;
+      btnSite.style.left = `${s.x}px`;
+      btnSite.style.top = `${s.y}px`;
     } else btnSite.style.display = "none";
   };
 
@@ -157,11 +140,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.03;
     renderer.render(scene, camera);
-    updateButtonPositions();
+    updateBtn();
   });
 
-  window.addEventListener("resize", updateButtonPositions);
-  window.addEventListener("orientationchange", () => {
-    setTimeout(updateButtonPositions, 500);
-  });
+  window.addEventListener("resize", updateBtn);
+  window.addEventListener("orientationchange", () => setTimeout(updateBtn, 500));
 });
