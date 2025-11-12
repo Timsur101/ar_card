@@ -160,3 +160,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     setTimeout(updateButtonPositions, 500);
   });
 });
+
+const handleOrientation = () => {
+  const angle = window.orientation || screen.orientation?.angle || 0;
+  const rot = (angle === 90 || angle === -90) ? "rotate(90deg)" : "rotate(0deg)";
+  for (const el of [btnGit, btnSite]) {
+    el.style.transform = `translate(-50%, -50%) ${rot}`;
+  }
+};
+window.addEventListener("orientationchange", handleOrientation);
+handleOrientation();
