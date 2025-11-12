@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const { renderer, scene, camera } = mindarThree;
-  renderer.domElement.style.touchAction = "none";
   const anchor = mindarThree.addAnchor(0);
+  renderer.domElement.style.touchAction = "none";
 
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(0.5, 0.5, 0.5),
@@ -68,71 +68,90 @@ document.addEventListener("DOMContentLoaded", async () => {
   const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
   scene.add(light);
 
-  const createButton = (label, color, x, onClick) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 128;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
-    ctx.font = "bold 36px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(label, 128, 64);
-    const texture = new THREE.CanvasTexture(canvas);
-    const button = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.6, 0.3),
-      new THREE.MeshBasicMaterial({ map: texture, transparent: true })
-    );
-    button.position.set(x, -0.8, 0.25);
-    button.userData.onClick = onClick;
-    return button;
-  };
+  // HTML-кнопки
+  const btnGit = document.createElement("button");
+  btnGit.textContent = "GitHub";
+  Object.assign(btnGit.style, {
+    position: "fixed",
+    padding: "10px 16px",
+    background: "#515b67",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    fontWeight: "bold",
+    transform: "translate(-50%, -50%)",
+    display: "none",
+    zIndex: 20,
+  });
+  document.body.appendChild(btnGit);
 
-  const btnSite1 = createButton("GitHub", "#515b67ff", -0.7, () => {
+  const btnSite = document.createElement("button");
+  btnSite.textContent = "Сайт";
+  Object.assign(btnSite.style, {
+    position: "fixed",
+    padding: "10px 16px",
+    background: "#ff0000",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    fontWeight: "bold",
+    transform: "translate(-50%, -50%)",
+    display: "none",
+    zIndex: 20,
+  });
+  document.body.appendChild(btnSite);
+
+  btnGit.addEventListener("click", () => {
     window.open("https://github.com/Timsur101", "_blank");
   });
-  const btnSite2 = createButton("Сайт", "#ff0000ff", 0.7, () => {
+  btnSite.addEventListener("click", () => {
     window.open("https://youtube.com", "_blank");
   });
 
-  anchor.group.add(btnSite1);
-  anchor.group.add(btnSite2);
+  // якоря для кнопок
+  const btnGitAnchor = new THREE.Object3D();
+  btnGitAnchor.position.set(-0.7, -0.8, 0.2);
+  anchor.group.add(btnGitAnchor);
+
+  const btnSiteAnchor = new THREE.Object3D();
+  btnSiteAnchor.position.set(0.7, -0.8, 0.2);
+  anchor.group.add(btnSiteAnchor);
+
+  // функция пересчёта 3D → 2D
+  const toScreenPosition = (obj, camera, renderer) => {
+    const vector = new THREE.Vector3();
+    obj.getWorldPosition(vector);
+    vector.project(camera);
+    const rect = renderer.domElement.getBoundingClientRect();
+    return {
+      x: (vector.x + 1) / 2 * rect.width + rect.left,
+      y: (-vector.y + 1) / 2 * rect.height + rect.top,
+      visible: vector.z < 1,
+    };
+  };
 
   await mindarThree.start();
   document.getElementById("hint").style.display = "none";
 
-  const raycaster = new THREE.Raycaster();
-  const pointer = new THREE.Vector2();
-
-  const handleClick = (event) => {
-    const rect = renderer.domElement.getBoundingClientRect();
-    const clientX = event.clientX || (event.touches && event.touches[0].clientX);
-    const clientY = event.clientY || (event.touches && event.touches[0].clientY);
-    pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-    pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-
-    raycaster.setFromCamera(pointer, camera);
-
-    const clickable = [];
-    anchor.group.traverse((obj) => {
-      if (obj.isMesh && obj.userData.onClick) clickable.push(obj);
-    });
-
-    const hits = raycaster.intersectObjects(clickable, true);
-    if (hits.length > 0) {
-      const obj = hits[0].object;
-      if (obj.userData.onClick) obj.userData.onClick();
-    }
-  };
-
-  renderer.domElement.addEventListener("touchend", handleClick);
-  renderer.domElement.addEventListener("mousedown", handleClick);
-
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.03;
+
+    const pos1 = toScreenPosition(btnGitAnchor, camera, renderer);
+    const pos2 = toScreenPosition(btnSiteAnchor, camera, renderer);
+
+    if (pos1.visible) {
+      btnGit.style.display = "block";
+      btnGit.style.left = `${pos1.x}px`;
+      btnGit.style.top = `${pos1.y}px`;
+    } else btnGit.style.display = "none";
+
+    if (pos2.visible) {
+      btnSite.style.display = "block";
+      btnSite.style.left = `${pos2.x}px`;
+      btnSite.style.top = `${pos2.y}px`;
+    } else btnSite.style.display = "none";
+
     renderer.render(scene, camera);
   });
 });
