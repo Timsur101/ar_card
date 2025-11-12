@@ -108,7 +108,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.open("https://youtube.com", "_blank");
   });
 
-  // якоря для кнопок
   const btnGitAnchor = new THREE.Object3D();
   btnGitAnchor.position.set(-0.7, -0.8, 0.2);
   anchor.group.add(btnGitAnchor);
@@ -117,7 +116,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   btnSiteAnchor.position.set(0.7, -0.8, 0.2);
   anchor.group.add(btnSiteAnchor);
 
-  // функция пересчёта 3D → 2D
   const toScreenPosition = (obj, camera, renderer) => {
     const vector = new THREE.Vector3();
     obj.getWorldPosition(vector);
@@ -133,10 +131,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await mindarThree.start();
   document.getElementById("hint").style.display = "none";
 
-  renderer.setAnimationLoop(() => {
-    cube.rotation.x += 0.02;
-    cube.rotation.y += 0.03;
-
+  const updateButtonPositions = () => {
     const pos1 = toScreenPosition(btnGitAnchor, camera, renderer);
     const pos2 = toScreenPosition(btnSiteAnchor, camera, renderer);
 
@@ -151,7 +146,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnSite.style.left = `${pos2.x}px`;
       btnSite.style.top = `${pos2.y}px`;
     } else btnSite.style.display = "none";
+  };
 
+  renderer.setAnimationLoop(() => {
+    cube.rotation.x += 0.02;
+    cube.rotation.y += 0.03;
     renderer.render(scene, camera);
+    updateButtonPositions();
+  });
+
+  window.addEventListener("resize", updateButtonPositions);
+  window.addEventListener("orientationchange", () => {
+    setTimeout(updateButtonPositions, 500);
   });
 });
