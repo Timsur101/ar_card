@@ -68,7 +68,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
   scene.add(light);
 
-  // HTML-кнопки
   const btnGit = document.createElement("button");
   btnGit.textContent = "GitHub";
   Object.assign(btnGit.style, {
@@ -82,6 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     transform: "translate(-50%, -50%)",
     display: "none",
     zIndex: 20,
+    transition: "transform 0.3s ease",
   });
   document.body.appendChild(btnGit);
 
@@ -98,6 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     transform: "translate(-50%, -50%)",
     display: "none",
     zIndex: 20,
+    transition: "transform 0.3s ease",
   });
   document.body.appendChild(btnSite);
 
@@ -131,6 +132,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   await mindarThree.start();
   document.getElementById("hint").style.display = "none";
 
+  scene.rotation.z = Math.PI / 2; 
+  const rotateButtons = (angleDeg) => {
+    const rot = `rotate(${angleDeg}deg)`;
+    for (const el of [btnGit, btnSite]) {
+      el.style.transform = `translate(-50%, -50%) ${rot}`;
+    }
+  };
+  rotateButtons(90);
+
   const updateButtonPositions = () => {
     const pos1 = toScreenPosition(btnGitAnchor, camera, renderer);
     const pos2 = toScreenPosition(btnSiteAnchor, camera, renderer);
@@ -160,13 +170,3 @@ document.addEventListener("DOMContentLoaded", async () => {
     setTimeout(updateButtonPositions, 500);
   });
 });
-
-const handleOrientation = () => {
-  const angle = window.orientation || screen.orientation?.angle || 0;
-  const rot = (angle === 90 || angle === -90) ? "rotate(90deg)" : "rotate(0deg)";
-  for (const el of [btnGit, btnSite]) {
-    el.style.transform = `translate(-50%, -50%) ${rot}`;
-  }
-};
-window.addEventListener("orientationchange", handleOrientation);
-handleOrientation();
