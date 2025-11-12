@@ -158,6 +158,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else btnSite.style.display = "none";
   };
 
+  scene.rotation.z = Math.PI / 2; 
+  for (const el of [btnGit, btnSite]) {
+    el.style.transform = "translate(-50%, -50%) rotate(90deg)";
+  }
+
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.03;
