@@ -13,26 +13,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    new THREE.MeshStandardMaterial({
-      color: 0x00ffcc,
-      metalness: 0.5,
-      roughness: 0.2,
-    })
+    new THREE.MeshStandardMaterial({ color: 0x00ffcc, metalness: 0.5, roughness: 0.2 })
   );
   anchor.group.add(cube);
 
   const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
     const height = 0.25 + 0.15 * lines.length;
-    const background = new THREE.Mesh(
+    const bg = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
-      new THREE.MeshBasicMaterial({
-        color: 0x222222,
-        transparent: true,
-        opacity: 0.8,
-      })
+      new THREE.MeshBasicMaterial({ color: 0x222222, transparent: true, opacity: 0.8 })
     );
-    group.add(background);
+    group.add(bg);
 
     const canvas = document.createElement("canvas");
     canvas.width = 512;
@@ -47,102 +39,79 @@ document.addEventListener("DOMContentLoaded", async () => {
       ctx.fillText(line, canvas.width / 2, y);
       y += 62;
     }
-    const texture = new THREE.CanvasTexture(canvas);
-    const textPlane = new THREE.Mesh(
+    const tex = new THREE.CanvasTexture(canvas);
+    const text = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
-      new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true })
     );
-    textPlane.position.z = 0.01;
-    group.add(textPlane);
+    text.position.z = 0.01;
+    group.add(text);
     group.position.set(xOffset, 0, 0);
     return group;
   };
 
-  const leftPanel = createTextPanel(
-    ["КОНТАКТЫ", "+7 (916) 930-32-75", "timsursur@gmail.com"],
-    -1.2
-  );
+  const leftPanel = createTextPanel(["КОНТАКТЫ", "+7 (916) 930-32-75", "timsursur@gmail.com"], -1.2);
   const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 1.2);
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
 
-  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
-  scene.add(light);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.5));
 
-  // === HTML-кнопки, привязанные к 3D-точкам ===
-  const makeBtn = (label, color) => {
-    const el = document.createElement("button");
-    el.textContent = label;
-    Object.assign(el.style, {
-      position: "fixed",
-      padding: "10px 16px",
-      background: color,
-      color: "white",
-      border: "none",
-      borderRadius: "10px",
-      fontWeight: "bold",
-      transform: "translate(-50%, -50%)",
-      display: "none",
-      zIndex: 20,
-    });
-    document.body.appendChild(el);
-    return el;
+  // 3D-кнопки
+  const make3DButton = (label, color, x, onClick) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 256;
+    canvas.height = 128;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "bold 36px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, 128, 64);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.6, 0.3),
+      new THREE.MeshBasicMaterial({ map: texture, transparent: true })
+    );
+    mesh.position.set(x, -0.8, 0.2);
+    mesh.userData.onClick = onClick;
+    return mesh;
   };
 
-  const btnGit = makeBtn("GitHub", "#515b67");
-  const btnSite = makeBtn("Сайт", "#ff0000");
+  const btnGit = make3DButton("GitHub", "#515b67", -0.7, () => window.open("https://github.com/Timsur101", "_blank"));
+  const btnSite = make3DButton("Сайт", "#ff0000", 0.7, () => window.open("https://youtube.com", "_blank"));
+  anchor.group.add(btnGit);
+  anchor.group.add(btnSite);
 
-  btnGit.addEventListener("click", () =>
-    window.open("https://github.com/Timsur101", "_blank")
-  );
-  btnSite.addEventListener("click", () =>
-    window.open("https://youtube.com", "_blank")
-  );
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
 
-  const gitAnchor = new THREE.Object3D();
-  gitAnchor.position.set(-0.7, -0.8, 0.2);
-  const siteAnchor = new THREE.Object3D();
-  siteAnchor.position.set(0.7, -0.8, 0.2);
-  anchor.group.add(gitAnchor);
-  anchor.group.add(siteAnchor);
-
-  const toScreen = (obj, camera, renderer) => {
-    const v = new THREE.Vector3();
-    obj.getWorldPosition(v);
-    v.project(camera);
+  const handleClick = (event) => {
     const rect = renderer.domElement.getBoundingClientRect();
-    return {
-      x: (v.x + 1) / 2 * rect.width + rect.left,
-      y: (-v.y + 1) / 2 * rect.height + rect.top,
-      visible: v.z < 1,
-    };
+    const clientX = event.clientX || (event.touches && event.touches[0].clientX);
+    const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+    pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+    const clickable = [];
+    anchor.group.traverse((o) => { if (o.isMesh && o.userData.onClick) clickable.push(o); });
+    const hits = raycaster.intersectObjects(clickable, true);
+    if (hits.length > 0 && hits[0].object.userData.onClick) hits[0].object.userData.onClick();
   };
+
+  renderer.domElement.addEventListener("mousedown", handleClick);
+  renderer.domElement.addEventListener("touchend", handleClick);
 
   await mindarThree.start();
   document.getElementById("hint").style.display = "none";
-
-  const updateBtn = () => {
-    const g = toScreen(gitAnchor, camera, renderer);
-    const s = toScreen(siteAnchor, camera, renderer);
-    if (g.visible) {
-      btnGit.style.display = "block";
-      btnGit.style.left = `${g.x}px`;
-      btnGit.style.top = `${g.y}px`;
-    } else btnGit.style.display = "none";
-    if (s.visible) {
-      btnSite.style.display = "block";
-      btnSite.style.left = `${s.x}px`;
-      btnSite.style.top = `${s.y}px`;
-    } else btnSite.style.display = "none";
-  };
 
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.03;
     renderer.render(scene, camera);
-    updateBtn();
   });
-
-  window.addEventListener("resize", updateBtn);
-  window.addEventListener("orientationchange", () => setTimeout(updateBtn, 500));
 });
