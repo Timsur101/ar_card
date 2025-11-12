@@ -8,8 +8,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const { renderer, scene, camera } = mindarThree;
-  const anchor = mindarThree.addAnchor(0);
   renderer.domElement.style.touchAction = "none";
+  const anchor = mindarThree.addAnchor(0);
 
   const cube = new THREE.Mesh(
     new THREE.BoxGeometry(0.5, 0.5, 0.5),
@@ -81,7 +81,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     transform: "translate(-50%, -50%)",
     display: "none",
     zIndex: 20,
-    transition: "transform 0.3s ease",
   });
   document.body.appendChild(btnGit);
 
@@ -98,7 +97,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     transform: "translate(-50%, -50%)",
     display: "none",
     zIndex: 20,
-    transition: "transform 0.3s ease",
   });
   document.body.appendChild(btnSite);
 
@@ -132,14 +130,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   await mindarThree.start();
   document.getElementById("hint").style.display = "none";
 
-  scene.rotation.z = Math.PI / 2; 
-  const rotateButtons = (angleDeg) => {
-    const rot = `rotate(${angleDeg}deg)`;
-    for (const el of [btnGit, btnSite]) {
-      el.style.transform = `translate(-50%, -50%) ${rot}`;
-    }
-  };
-  rotateButtons(90);
+  scene.rotation.z = Math.PI / 2;
+
+  for (const el of [btnGit, btnSite]) {
+    el.style.transform = "translate(-50%, -50%) rotate(90deg)";
+  }
 
   const updateButtonPositions = () => {
     const pos1 = toScreenPosition(btnGitAnchor, camera, renderer);
@@ -157,11 +152,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnSite.style.top = `${pos2.y}px`;
     } else btnSite.style.display = "none";
   };
-
-  scene.rotation.z = Math.PI / 2; 
-  for (const el of [btnGit, btnSite]) {
-    el.style.transform = "translate(-50%, -50%) rotate(90deg)";
-  }
 
   renderer.setAnimationLoop(() => {
     cube.rotation.x += 0.02;
