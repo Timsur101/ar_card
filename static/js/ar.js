@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const loader = new GLTFLoader();
   loader.load("/static/models/logo.glb", (gltf) => {
     const model = gltf.scene;
-    model.scale.set(0.5, 0.5, 0.5); 
+    model.scale.set(0.5, 0.5, 0.5);
     model.position.set(0, 0, 0);
     anchor.group.add(model);
   });
@@ -38,15 +38,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext("2d");
+
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = "bold 42px sans-serif";
+
     let y = 120;
     for (const line of lines) {
       ctx.fillText(line, canvas.width / 2, y);
       y += 62;
     }
+
     const texture = new THREE.CanvasTexture(canvas);
     const textPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
@@ -114,6 +117,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     obj.getWorldPosition(v);
     v.project(camera);
     const rect = renderer.domElement.getBoundingClientRect();
+
     return {
       x: (v.x + 1) / 2 * rect.width + rect.left,
       y: (-v.y + 1) / 2 * rect.height + rect.top,
