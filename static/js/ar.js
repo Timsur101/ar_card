@@ -13,12 +13,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   const anchor = mindarThree.addAnchor(0);
 
   const loader = new GLTFLoader();
-  loader.load("/static/models/logo.glb", (gltf) => {
-    const model = gltf.scene;
-    model.scale.set(0.5, 0.5, 0.5);
-    model.position.set(0, 0, 0);
-    anchor.group.add(model);
-  });
+  loader.load(
+    "/static/models/base.glb",
+    (gltf) => {
+      const model = gltf.scene;
+
+      model.scale.set(0.2, 0.2, 0.2);
+      model.position.set(0, 0, 0); 
+      model.rotation.set(0, 0, 0);
+
+      anchor.group.add(model);
+    },
+    undefined,
+    (err) => {
+      console.error("Ошибка загрузки модели:", err);
+    }
+  );
 
   const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
@@ -71,12 +81,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
 
-  const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
-  scene.add(light);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 2);
+  scene.add(hemiLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  dirLight.position.set(0, 1, 1);
+  scene.add(dirLight);
 
   const makeBtn = (label, color) => {
     const el = document.createElement("button");
     el.textContent = label;
+
     Object.assign(el.style, {
       position: "fixed",
       padding: "10px 16px",
@@ -89,6 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       display: "none",
       zIndex: 20,
     });
+
     document.body.appendChild(el);
     return el;
   };
@@ -116,6 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const v = new THREE.Vector3();
     obj.getWorldPosition(v);
     v.project(camera);
+
     const rect = renderer.domElement.getBoundingClientRect();
 
     return {
