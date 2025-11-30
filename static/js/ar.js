@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     (gltf) => {
       const model = gltf.scene;
 
-      model.scale.set(0.2, 0.2, 0.2);
+      model.scale.set(0.35, 0.35, 0.35);
       model.position.set(0, 0, 0); 
       model.rotation.set(0, 0, 0);
 
