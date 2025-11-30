@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/GLTFLoader.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const mindarThree = new MindARThree({
@@ -11,19 +12,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderer.domElement.style.touchAction = "none";
   const anchor = mindarThree.addAnchor(0);
 
-  const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    new THREE.MeshStandardMaterial({
-      color: 0x00ffcc,
-      metalness: 0.5,
-      roughness: 0.2,
-    })
-  );
-  anchor.group.add(cube);
+  const loader = new GLTFLoader();
+  loader.load("/static/models/logo.glb", (gltf) => {
+    const model = gltf.scene;
+    model.scale.set(0.5, 0.5, 0.5); 
+    model.position.set(0, 0, 0);
+    anchor.group.add(model);
+  });
 
   const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
     const height = 0.25 + 0.15 * lines.length;
+
     const background = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, height),
       new THREE.MeshBasicMaterial({
@@ -54,6 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
     textPlane.position.z = 0.01;
     group.add(textPlane);
+
     group.position.set(xOffset, 0, 0);
     return group;
   };
@@ -63,13 +64,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     -1.2
   );
   const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 1.2);
+
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
 
   const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
   scene.add(light);
 
-  // === HTML-кнопки, привязанные к 3D-точкам ===
   const makeBtn = (label, color) => {
     const el = document.createElement("button");
     el.textContent = label;
@@ -101,8 +102,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const gitAnchor = new THREE.Object3D();
   gitAnchor.position.set(-0.7, -0.8, 0.2);
+
   const siteAnchor = new THREE.Object3D();
   siteAnchor.position.set(0.7, -0.8, 0.2);
+
   anchor.group.add(gitAnchor);
   anchor.group.add(siteAnchor);
 
@@ -124,11 +127,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const updateBtn = () => {
     const g = toScreen(gitAnchor, camera, renderer);
     const s = toScreen(siteAnchor, camera, renderer);
+
     if (g.visible) {
       btnGit.style.display = "block";
       btnGit.style.left = `${g.x}px`;
       btnGit.style.top = `${g.y}px`;
     } else btnGit.style.display = "none";
+
     if (s.visible) {
       btnSite.style.display = "block";
       btnSite.style.left = `${s.x}px`;
@@ -137,12 +142,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   renderer.setAnimationLoop(() => {
-    cube.rotation.x += 0.02;
-    cube.rotation.y += 0.03;
     renderer.render(scene, camera);
     updateBtn();
   });
 
   window.addEventListener("resize", updateBtn);
-  window.addEventListener("orientationchange", () => setTimeout(updateBtn, 500));
+  window.addEventListener("orientationchange", () =>
+    setTimeout(updateBtn, 500)
+  );
 });
