@@ -3,7 +3,7 @@ import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/min
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/GLTFLoader.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const PHONE_E164 = "+79169303275"; 
+  const PHONE_E164 = "+79169303275";
   const PHONE_DISPLAY = "+7 (916) 930-32-75";
 
   const mindarThree = new MindARThree({
@@ -27,41 +27,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     "/static/models/base.glb",
     (gltf) => {
       const model = gltf.scene;
-
       model.scale.set(0.35, 0.35, 0.35);
       model.position.set(0, 0, 0);
       model.rotation.set(0, 0, 0);
-
-      const baseColor = new THREE.Color(0x2d9cdb);
-
-      model.traverse((obj) => {
-        if (!obj.isMesh) return;
-
-        const convertMaterial = (mat) => {
-          const map = mat?.map ?? null;
-
-          const newMat = new THREE.MeshStandardMaterial({
-            color: baseColor,
-            map,
-            metalness: 0.15,
-            roughness: 0.55,
-          });
-
-          if (mat?.transparent) {
-            newMat.transparent = true;
-            newMat.opacity = mat.opacity ?? 1;
-          }
-
-          return newMat;
-        };
-
-        if (Array.isArray(obj.material)) {
-          obj.material = obj.material.map((m) => convertMaterial(m));
-        } else {
-          obj.material = convertMaterial(obj.material);
-        }
-      });
-
       anchor.group.add(model);
     },
     undefined,
