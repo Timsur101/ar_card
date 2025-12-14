@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "/static/models/base_colored.glb",
     (gltf) => {
       const model = gltf.scene;
-      model.scale.set(0.45, 0.45, 0.45);
+      model.scale.set(0.42, 0.42, 0.42);
       model.position.set(0, 0, 0);
       model.rotation.set(0, 0, 0);
       anchor.group.add(model);
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const height = 0.18 + 0.10 * lines.length;
 
     const background = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.85, height),
+      new THREE.PlaneGeometry(0.8, height),
       new THREE.MeshBasicMaterial({
         color: 0x222222,
         transparent: true,
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const texture = new THREE.CanvasTexture(canvas);
     const textPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.85, height),
+      new THREE.PlaneGeometry(0.8, height),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true })
     );
     textPlane.position.z = 0.01;
@@ -82,9 +82,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const leftPanel = createTextPanel(
     ["КОНТАКТЫ", PHONE_DISPLAY, "timsursur@gmail.com"],
-    -0.75
+    -0.9
   );
-  const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 0.75);
+  const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 0.9);
 
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
@@ -123,10 +123,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const gitAnchor = new THREE.Object3D();
-  gitAnchor.position.set(-0.35, -0.65, 0.2);
+  gitAnchor.position.set(-0.38, -0.65, 0.2);
 
   const callAnchor = new THREE.Object3D();
-  callAnchor.position.set(0.35, -0.65, 0.2);
+  callAnchor.position.set(0.38, -0.65, 0.2);
 
   anchor.group.add(gitAnchor);
   anchor.group.add(callAnchor);
