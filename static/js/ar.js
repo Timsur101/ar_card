@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "/static/models/base_colored.glb",
     (gltf) => {
       const model = gltf.scene;
-      model.scale.set(0.52, 0.52, 0.52);
+      model.scale.set(0.7, 0.7, 0.7);
       model.position.set(0, 0, 0);
       model.rotation.set(0, 0, 0);
       anchor.group.add(model);
@@ -82,9 +82,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const leftPanel = createTextPanel(
     ["КОНТАКТЫ", PHONE_DISPLAY, "timsursur@gmail.com"],
-    -0.9
+    -0.95
   );
-  const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 0.9);
+  const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 0.95);
 
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
@@ -123,10 +123,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const gitAnchor = new THREE.Object3D();
-  gitAnchor.position.set(-0.38, -0.65, 0.2);
+  gitAnchor.position.set(-0.42, -0.7, 0.2);
 
   const callAnchor = new THREE.Object3D();
-  callAnchor.position.set(0.38, -0.65, 0.2);
+  callAnchor.position.set(0.42, -0.7, 0.2);
 
   anchor.group.add(gitAnchor);
   anchor.group.add(callAnchor);
