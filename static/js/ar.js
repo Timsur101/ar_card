@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "/static/models/base_colored.glb",
     (gltf) => {
       const model = gltf.scene;
-      model.scale.set(0.42, 0.42, 0.42);
+      model.scale.set(0.52, 0.52, 0.52);
       model.position.set(0, 0, 0);
       model.rotation.set(0, 0, 0);
       anchor.group.add(model);
