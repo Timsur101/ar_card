@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const loader = new GLTFLoader();
   loader.load(
-    "/static/models/base.glb",
+    "/static/models/base_colored.glb",
     (gltf) => {
       const model = gltf.scene;
       model.scale.set(0.35, 0.35, 0.35);
