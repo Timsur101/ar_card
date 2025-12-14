@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "/static/models/base_colored.glb",
     (gltf) => {
       const model = gltf.scene;
-      model.scale.set(0.35, 0.35, 0.35);
+      model.scale.set(0.45, 0.45, 0.45);
       model.position.set(0, 0, 0);
       model.rotation.set(0, 0, 0);
       anchor.group.add(model);
@@ -40,10 +40,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const createTextPanel = (lines, xOffset) => {
     const group = new THREE.Group();
-    const height = 0.25 + 0.15 * lines.length;
+    const height = 0.18 + 0.10 * lines.length;
 
     const background = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.2, height),
+      new THREE.PlaneGeometry(0.85, height),
       new THREE.MeshBasicMaterial({
         color: 0x222222,
         transparent: true,
@@ -60,17 +60,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = "bold 42px sans-serif";
+    ctx.font = "bold 40px sans-serif";
 
-    let y = 120;
+    let y = 150;
     for (const line of lines) {
       ctx.fillText(line, canvas.width / 2, y);
-      y += 62;
+      y += 70;
     }
 
     const texture = new THREE.CanvasTexture(canvas);
     const textPlane = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.2, height),
+      new THREE.PlaneGeometry(0.85, height),
       new THREE.MeshBasicMaterial({ map: texture, transparent: true })
     );
     textPlane.position.z = 0.01;
@@ -82,9 +82,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const leftPanel = createTextPanel(
     ["КОНТАКТЫ", PHONE_DISPLAY, "timsursur@gmail.com"],
-    -1.2
+    -0.75
   );
-  const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 1.2);
+  const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 0.75);
 
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     Object.assign(el.style, {
       position: "fixed",
-      padding: "10px 16px",
+      padding: "9px 14px",
       background: color,
       color: "white",
       border: "none",
@@ -123,10 +123,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   const gitAnchor = new THREE.Object3D();
-  gitAnchor.position.set(-0.7, -0.8, 0.2);
+  gitAnchor.position.set(-0.35, -0.65, 0.2);
 
   const callAnchor = new THREE.Object3D();
-  callAnchor.position.set(0.7, -0.8, 0.2);
+  callAnchor.position.set(0.35, -0.65, 0.2);
 
   anchor.group.add(gitAnchor);
   anchor.group.add(callAnchor);
