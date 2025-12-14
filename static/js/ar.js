@@ -3,6 +3,9 @@ import { MindARThree } from "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/min
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/GLTFLoader.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const PHONE_E164 = "+79169303275"; 
+  const PHONE_DISPLAY = "+7 (916) 930-32-75";
+
   const mindarThree = new MindARThree({
     container: document.querySelector("#container"),
     imageTargetSrc: "/static/ar/visiting-card.mind",
@@ -12,6 +15,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderer.domElement.style.touchAction = "none";
   const anchor = mindarThree.addAnchor(0);
 
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 2);
+  scene.add(hemiLight);
+
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+  dirLight.position.set(0, 1, 1);
+  scene.add(dirLight);
+
   const loader = new GLTFLoader();
   loader.load(
     "/static/models/base.glb",
@@ -19,8 +29,38 @@ document.addEventListener("DOMContentLoaded", async () => {
       const model = gltf.scene;
 
       model.scale.set(0.35, 0.35, 0.35);
-      model.position.set(0, 0, 0); 
+      model.position.set(0, 0, 0);
       model.rotation.set(0, 0, 0);
+
+      const baseColor = new THREE.Color(0x2d9cdb);
+
+      model.traverse((obj) => {
+        if (!obj.isMesh) return;
+
+        const convertMaterial = (mat) => {
+          const map = mat?.map ?? null;
+
+          const newMat = new THREE.MeshStandardMaterial({
+            color: baseColor,
+            map,
+            metalness: 0.15,
+            roughness: 0.55,
+          });
+
+          if (mat?.transparent) {
+            newMat.transparent = true;
+            newMat.opacity = mat.opacity ?? 1;
+          }
+
+          return newMat;
+        };
+
+        if (Array.isArray(obj.material)) {
+          obj.material = obj.material.map((m) => convertMaterial(m));
+        } else {
+          obj.material = convertMaterial(obj.material);
+        }
+      });
 
       anchor.group.add(model);
     },
@@ -73,20 +113,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const leftPanel = createTextPanel(
-    ["КОНТАКТЫ", "+7 (916) 930-32-75", "timsursur@gmail.com"],
+    ["КОНТАКТЫ", PHONE_DISPLAY, "timsursur@gmail.com"],
     -1.2
   );
   const rightPanel = createTextPanel(["ДОЛЖНОСТЬ", "СТУДЕНТ"], 1.2);
 
   anchor.group.add(leftPanel);
   anchor.group.add(rightPanel);
-
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 2);
-  scene.add(hemiLight);
-
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-  dirLight.position.set(0, 1, 1);
-  scene.add(dirLight);
 
   const makeBtn = (label, color) => {
     const el = document.createElement("button");
@@ -103,6 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       transform: "translate(-50%, -50%)",
       display: "none",
       zIndex: 20,
+      cursor: "pointer",
     });
 
     document.body.appendChild(el);
@@ -110,23 +144,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   const btnGit = makeBtn("GitHub", "#515b67");
-  const btnSite = makeBtn("Сайт", "#ff0000");
+  const btnCall = makeBtn("Позвонить", "#28a745");
 
   btnGit.addEventListener("click", () =>
     window.open("https://github.com/Timsur101", "_blank")
   );
-  btnSite.addEventListener("click", () =>
-    window.open("https://youtube.com", "_blank")
-  );
+
+  btnCall.addEventListener("click", () => {
+    window.location.href = `tel:${PHONE_E164}`;
+  });
 
   const gitAnchor = new THREE.Object3D();
   gitAnchor.position.set(-0.7, -0.8, 0.2);
 
-  const siteAnchor = new THREE.Object3D();
-  siteAnchor.position.set(0.7, -0.8, 0.2);
+  const callAnchor = new THREE.Object3D();
+  callAnchor.position.set(0.7, -0.8, 0.2);
 
   anchor.group.add(gitAnchor);
-  anchor.group.add(siteAnchor);
+  anchor.group.add(callAnchor);
 
   const toScreen = (obj, camera, renderer) => {
     const v = new THREE.Vector3();
@@ -136,18 +171,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     const rect = renderer.domElement.getBoundingClientRect();
 
     return {
-      x: (v.x + 1) / 2 * rect.width + rect.left,
-      y: (-v.y + 1) / 2 * rect.height + rect.top,
+      x: ((v.x + 1) / 2) * rect.width + rect.left,
+      y: ((-v.y + 1) / 2) * rect.height + rect.top,
       visible: v.z < 1,
     };
   };
 
   await mindarThree.start();
-  document.getElementById("hint").style.display = "none";
+  const hint = document.getElementById("hint");
+  if (hint) hint.style.display = "none";
 
   const updateBtn = () => {
     const g = toScreen(gitAnchor, camera, renderer);
-    const s = toScreen(siteAnchor, camera, renderer);
+    const c = toScreen(callAnchor, camera, renderer);
 
     if (g.visible) {
       btnGit.style.display = "block";
@@ -155,11 +191,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnGit.style.top = `${g.y}px`;
     } else btnGit.style.display = "none";
 
-    if (s.visible) {
-      btnSite.style.display = "block";
-      btnSite.style.left = `${s.x}px`;
-      btnSite.style.top = `${s.y}px`;
-    } else btnSite.style.display = "none";
+    if (c.visible) {
+      btnCall.style.display = "block";
+      btnCall.style.left = `${c.x}px`;
+      btnCall.style.top = `${c.y}px`;
+    } else btnCall.style.display = "none";
   };
 
   renderer.setAnimationLoop(() => {
